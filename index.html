@@ -1,0 +1,552 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="ru"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Jump Runner — Telegram Mini App&lt;/title&gt;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Telegram Web App SDK --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://telegram.org/js/telegram-web-app.js"&gt;&lt;/script&gt;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>* {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-sizing: border-box;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>user-select: none;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>-webkit-tap-highlight-color: transparent;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: var(--tg-theme-bg-color, #2c3e50);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>min-height: 100vh;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>touch-action: pan-y;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.game-wrapper {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>flex-direction: column;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>max-width: 450px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>canvas {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: block;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>height: auto;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>touch-action: none;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 8px 20px rgba(0,0,0,0.3);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: var(--tg-theme-secondary-bg-color, #34495e);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.stats-panel {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 12px 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: var(--tg-theme-section-bg-color, #34495e);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 30px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: var(--tg-theme-text-color, white);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 4px 12px rgba(0,0,0,0.2);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.score-item {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gap: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 18px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.score-item span {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: var(--tg-theme-button-color, #2ecc71);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 4px 12px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: var(--tg-theme-button-text-color, white);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.leaderboard-btn {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: var(--tg-theme-button-color, #3498db);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border: none;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: var(--tg-theme-button-text-color, white);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 10px 20px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 25px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gap: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>transition: transform 0.2s;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>touch-action: manipulation;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.leaderboard-btn:active {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>transform: scale(0.95);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.high-score {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: var(--tg-theme-hint-color, #f1c40f);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin-top: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>@media (max-width: 400px) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>.stats-panel {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>padding: 10px 16px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>.score-item {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>font-size: 16px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>.leaderboard-btn {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>padding: 8px 16px;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="game-wrapper"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;canvas id="gameCanvas" width="400" height="600"&gt;&lt;/canvas&gt;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="stats-panel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="score-item"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>💰 &lt;span id="coinCount"&gt;0&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="score-item"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>🏆 &lt;span id="scoreCount"&gt;0&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="leaderboard-btn" id="leaderboardBtn"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>🏅 Рекорды</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="high-score" id="highScoreDisplay"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>🥇 Лучший результат: 0</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Инициализация Telegram Web App</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const tg = window.Telegram.WebApp;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Настраиваем внешний вид под тему Telegram</p>
+<p class="p1"><span class="Apple-converted-space">        </span>tg.ready();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>tg.expand(); // Разворачиваем на весь экран</p>
+<p class="p1"><span class="Apple-converted-space">        </span>tg.enableClosingConfirmation(); // Подтверждение при закрытии</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Устанавливаем цвета темы</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.body.style.backgroundColor = tg.themeParams.bg_color || '#2c3e50';</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Показываем основную кнопку (для рестарта)</p>
+<p class="p1"><span class="Apple-converted-space">        </span>tg.MainButton.setText('🔄 Новая игра');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>tg.MainButton.hide();</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Хранилище рекордов</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let highScore = localStorage.getItem('tg_highscore') || 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let userScore = 0;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Canvas</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const canvas = document.getElementById('gameCanvas');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const ctx = canvas.getContext('2d');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const coinDisplay = document.getElementById('coinCount');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const scoreDisplay = document.getElementById('scoreCount');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const highScoreDisplay = document.getElementById('highScoreDisplay');</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Настройки игры</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const GROUND_Y = 500;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const PLAYER_SIZE = 40;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const OBSTACLE_SIZE = 30;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const COIN_SIZE = 20;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Игрок</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let player = {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>x: 50,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>y: GROUND_Y - PLAYER_SIZE,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>width: PLAYER_SIZE,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>height: PLAYER_SIZE,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>velY: 0,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gravity: 0.5,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>jumpPower: -12,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>isJumping: false,</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: tg.themeParams.button_color || '#3498db'</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Игровые объекты</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let obstacles = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let coins = [];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let gameSpeed = 5;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let score = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let coinsCollected = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let frameCount = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let gameOver = false;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let gameStarted = false;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let animationId = null;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Обновление отображения рекорда</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function updateHighScoreDisplay() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>highScoreDisplay.textContent = `🥇 Лучший результат: ${highScore}`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>updateHighScoreDisplay();</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Прыжок</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function jump() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!gameStarted) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>startGame();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!gameOver &amp;&amp; !player.isJumping) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>player.velY = player.jumpPower;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>player.isJumping = true;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Вибрация при прыжке (если поддерживается)</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (tg.isVersionAtLeast('6.1')) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>tg.HapticFeedback.impactOccurred('light');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Начало игры</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function startGame() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gameStarted = true;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gameOver = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>resetGame();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>tg.MainButton.hide();</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Показываем прогресс в заголовке</p>
+<p class="p1"><span class="Apple-converted-space">            </span>tg.setHeaderColor('secondary_bg_color');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Сброс игры</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function resetGame() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>player.y = GROUND_Y - PLAYER_SIZE;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>player.velY = 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>player.isJumping = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>obstacles = [];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>coins = [];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gameSpeed = 5;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>score = 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>coinsCollected = 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>frameCount = 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>updateScore();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Обновление счета</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function updateScore() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>coinDisplay.textContent = coinsCollected;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>scoreDisplay.textContent = score;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Обновляем рекорд</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (score &gt; highScore) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>highScore = score;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>localStorage.setItem('tg_highscore', highScore);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>updateHighScoreDisplay();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Создание препятствия</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function spawnObstacle() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>obstacles.push({</p>
+<p class="p1"><span class="Apple-converted-space">                </span>x: canvas.width,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>y: GROUND_Y - OBSTACLE_SIZE,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>width: OBSTACLE_SIZE,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>height: OBSTACLE_SIZE,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>color: tg.theme_params?.destructive_text_color || '#e74c3c',</p>
+<p class="p1"><span class="Apple-converted-space">                </span>passed: false</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Создание монеты</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function spawnCoin() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>coins.push({</p>
+<p class="p1"><span class="Apple-converted-space">                </span>x: canvas.width,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>y: GROUND_Y - COIN_SIZE - 40,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>width: COIN_SIZE,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>height: COIN_SIZE,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>color: '#f1c40f',</p>
+<p class="p1"><span class="Apple-converted-space">                </span>collected: false</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Проверка столкновений</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function checkCollision(rect1, rect2) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return rect1.x &lt; rect2.x + rect2.width &amp;&amp;</p>
+<p class="p1"><span class="Apple-converted-space">                   </span>rect1.x + rect1.width &gt; rect2.x &amp;&amp;</p>
+<p class="p1"><span class="Apple-converted-space">                   </span>rect1.y &lt; rect2.y + rect2.height &amp;&amp;</p>
+<p class="p1"><span class="Apple-converted-space">                   </span>rect1.y + rect1.height &gt; rect2.y;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Обновление игры</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function update() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!gameStarted || gameOver) return;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Обновление игрока</p>
+<p class="p1"><span class="Apple-converted-space">            </span>player.velY += player.gravity;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>player.y += player.velY;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (player.y &gt; GROUND_Y - PLAYER_SIZE) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>player.y = GROUND_Y - PLAYER_SIZE;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>player.velY = 0;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>player.isJumping = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Спавн объектов</p>
+<p class="p1"><span class="Apple-converted-space">            </span>frameCount++;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (frameCount % Math.floor(40 / (gameSpeed/3)) === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>spawnObstacle();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (frameCount % Math.floor(30 / (gameSpeed/3)) === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>spawnCoin();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Обновление препятствий</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let i = obstacles.length - 1; i &gt;= 0; i--) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>obstacles[i].x -= gameSpeed;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!obstacles[i].passed &amp;&amp; obstacles[i].x + obstacles[i].width &lt; player.x) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>obstacles[i].passed = true;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>score += 20;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (obstacles[i].x + obstacles[i].width &lt; 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>obstacles.splice(i, 1);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Обновление монет</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let i = coins.length - 1; i &gt;= 0; i--) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>coins[i].x -= gameSpeed;</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (coins[i].x + coins[i].width &lt; 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>coins.splice(i, 1);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Проверка столкновений</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let obstacle of obstacles) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (checkCollision(</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>{x: player.x, y: player.y, width: PLAYER_SIZE, height: PLAYER_SIZE},</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>{x: obstacle.x, y: obstacle.y, width: OBSTACLE_SIZE, height: OBSTACLE_SIZE}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>)) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>gameOver = true;</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>// Вибрация при проигрыше</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (tg.isVersionAtLeast('6.1')) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>tg.HapticFeedback.notificationOccurred('error');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>// Показываем кнопку рестарта</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>tg.MainButton.show();</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>// Отправляем результат в Telegram</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>tg.sendData(JSON.stringify({</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>score: score,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>coins: coinsCollected,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>highscore: highScore</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}));</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Сбор монет</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let i = coins.length - 1; i &gt;= 0; i--) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (checkCollision(</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>{x: player.x, y: player.y, width: PLAYER_SIZE, height: PLAYER_SIZE},</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>{x: coins[i].x, y: coins[i].y, width: COIN_SIZE, height: COIN_SIZE}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>)) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>coins.splice(i, 1);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>coinsCollected++;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>score += 10;</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>// Вибрация при сборе монеты</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>if (tg.isVersionAtLeast('6.1')) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>tg.HapticFeedback.impactOccurred('soft');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Увеличение счета и скорости</p>
+<p class="p1"><span class="Apple-converted-space">            </span>score += 1;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (score % 500 === 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>gameSpeed += 0.5;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>updateScore();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Отрисовка</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function draw() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Фон</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = tg.themeParams.secondary_bg_color || '#2c3e50';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(0, 0, canvas.width, canvas.height);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Земля</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = tg.themeParams.link_color || '#27ae60';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(0, GROUND_Y, canvas.width, 20);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Декоративная линия</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = tg.themeParams.hint_color || '#34495e';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(0, GROUND_Y - 2, canvas.width, 2);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Игрок</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = player.color;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.shadowBlur = 10;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.shadowColor = 'rgba(0,0,0,0.3)';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Глаза игрока</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = 'white';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(player.x + 25, player.y + 10, 8, 8);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillStyle = 'black';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.fillRect(player.x + 28, player.y + 12, 4, 4);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Препятствия</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let obstacle of obstacles) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = obstacle.color;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillRect(obstacle.x, obstacle.y, OBSTACLE_SIZE, OBSTACLE_SIZE);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = 'white';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillRect(obstacle.x + 5, obstacle.y + 8, 6, 6);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillRect(obstacle.x + 18, obstacle.y + 8, 6, 6);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = 'black';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillRect(obstacle.x + 7, obstacle.y + 10, 3, 3);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillRect(obstacle.x + 20, obstacle.y + 10, 3, 3);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Монеты</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let coin of coins) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = coin.color;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.shadowBlur = 15;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.shadowColor = '#f1c40f';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.beginPath();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.arc(coin.x + COIN_SIZE/2, coin.y + COIN_SIZE/2, COIN_SIZE/2, 0, Math.PI * 2);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fill();</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = 'white';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.beginPath();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.arc(coin.x + COIN_SIZE/2 + 3, coin.y + COIN_SIZE/2 - 3, 3, 0, Math.PI * 2);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fill();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>ctx.shadowBlur = 0;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Стартовый экран</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!gameStarted) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = 'rgba(0,0,0,0.7)';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillRect(0, 0, canvas.width, canvas.height);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = tg.themeParams.button_color || '#f1c40f';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.font = 'bold 32px Arial';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.textAlign = 'center';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillText('JUMP RUNNER', canvas.width/2, canvas.height/2 - 50);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = tg.themeParams.text_color || 'white';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.font = '20px Arial';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillText('👆 Нажми на экран', canvas.width/2, canvas.height/2 + 30);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillText('чтобы начать', canvas.width/2, canvas.height/2 + 70);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Game Over</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (gameOver) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = 'rgba(0,0,0,0.8)';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillRect(0, 0, canvas.width, canvas.height);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = tg.theme_params?.destructive_text_color || '#e74c3c';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.font = 'bold 36px Arial';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.textAlign = 'center';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 60);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillStyle = tg.themeParams.text_color || 'white';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.font = '24px Arial';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillText(`Счет: ${score}`, canvas.width/2, canvas.height/2 + 20);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>ctx.fillText(`Монеты: ${coinsCollected}`, canvas.width/2, canvas.height/2 + 70);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Игровой цикл</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function gameLoop() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>update();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>draw();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>animationId = requestAnimationFrame(gameLoop);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Обработчики событий</p>
+<p class="p1"><span class="Apple-converted-space">        </span>function handleJump(e) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>e.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>jump();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Touch события</p>
+<p class="p1"><span class="Apple-converted-space">        </span>canvas.addEventListener('touchstart', handleJump);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>canvas.addEventListener('mousedown', handleJump);</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Клавиша пробела</p>
+<p class="p1"><span class="Apple-converted-space">        </span>window.addEventListener('keydown', (e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (e.code === 'Space') {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>e.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">                </span>jump();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Кнопка рекордов в Telegram</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('leaderboardBtn').addEventListener('click', () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>tg.showPopup({</p>
+<p class="p1"><span class="Apple-converted-space">                </span>title: '🏆 Таблица рекордов',</p>
+<p class="p1"><span class="Apple-converted-space">                </span>message: `Ваш лучший результат: ${highScore}\n\nИграйте больше, чтобы побить рекорд!`,</p>
+<p class="p1"><span class="Apple-converted-space">                </span>buttons: [{</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>id: 'close',</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>type: 'close',</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>text: 'OK'</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}]</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Кнопка рестарта (MainButton Telegram)</p>
+<p class="p1"><span class="Apple-converted-space">        </span>tg.MainButton.onClick(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gameStarted = true;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>gameOver = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>resetGame();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>tg.MainButton.hide();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Запрещаем скролл</p>
+<p class="p1"><span class="Apple-converted-space">        </span>canvas.addEventListener('touchmove', (e) =&gt; e.preventDefault());</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Запуск игры</p>
+<p class="p1"><span class="Apple-converted-space">        </span>gameLoop();</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Отправляем данные о готовности приложения</p>
+<p class="p1"><span class="Apple-converted-space">        </span>tg.ready();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
