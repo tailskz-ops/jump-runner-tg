@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Runner — 3 жизни, скорость по таймеру, умные монеты</title>
+    <title>Jump Runner — увеличенная скорость прыжка</title>
     <style>
         * {
             margin: 0;
@@ -98,7 +98,7 @@
             <button class="restart-btn" id="restartBtn">🔄 Новая игра</button>
         </div>
         <div class="instructions">
-            👆 Зажми / ПРОБЕЛ — сила прыжка | ❤️ 3 жизни | Скорость растёт каждые 60 сек
+            👆 Зажми / ПРОБЕЛ — УВЕЛИЧЕННАЯ СИЛА ПРЫЖКА! | ❤️ 3 жизни | Скорость растёт каждые 60 сек
         </div>
     </div>
 
@@ -123,12 +123,13 @@
             x: 50, y: GROUND_Y - PLAYER_SIZE,
             width: PLAYER_SIZE, height: PLAYER_SIZE,
             velY: 0, gravity: 0.5,
-            minJumpPower: -9,
-            maxJumpPower: -17,
+            // ⚡ УВЕЛИЧЕННАЯ СКОРОСТЬ ПРЫЖКА
+            minJumpPower: -11,     // было -9, теперь -11 (выше)
+            maxJumpPower: -19,    // было -17, теперь -19 (ещё выше)
             maxHoldTime: 600,
             isJumping: false,
             color: '#3498db',
-            invincible: false,        // неуязвимость после получения урона
+            invincible: false,
             invincibleTimer: 0,
             blinkTimer: 0
         };
@@ -138,17 +139,17 @@
         let coins = [];
         
         // ---------- ПАРАМЕТРЫ ИГРЫ ----------
-        let gameSpeed = 4;            // СТАРТОВАЯ СКОРОСТЬ (было 5, теперь 4)
+        let gameSpeed = 4;
         let score = 0;
         let coinsCollected = 0;
-        let lives = 3;              // 3 ЖИЗНИ
+        let lives = 3;
         let gameOver = false;
         let gameStarted = false;
         let animationId = null;
 
         // ---------- ТАЙМЕР СКОРОСТИ (60 СЕКУНД = 3600 КАДРОВ) ----------
         let speedTimer = 0;
-        const SPEED_INCREASE_INTERVAL = 3600; // 60 секунд при 60 FPS
+        const SPEED_INCREASE_INTERVAL = 3600;
         let currentSpeedLevel = 1;
 
         // ---------- ПЕРЕМЕННЫЕ ДЛЯ СПАВНА ----------
@@ -166,7 +167,6 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        // ---------- ОТОБРАЖЕНИЕ ЖИЗНЕЙ ----------
         function updateLivesDisplay() {
             let hearts = '';
             for (let i = 0; i < lives; i++) hearts += '❤️';
@@ -174,7 +174,6 @@
             livesDisplay.textContent = hearts;
         }
 
-        // ---------- ПОЛНЫЙ СБРОС ИГРЫ ----------
         function restartGame() {
             player.y = GROUND_Y - PLAYER_SIZE;
             player.velY = 0;
@@ -185,7 +184,6 @@
             obstacles = [];
             coins = [];
 
-            // СБРОС СКОРОСТИ И ТАЙМЕРА
             gameSpeed = 4;
             speedTimer = 0;
             currentSpeedLevel = 1;
@@ -211,7 +209,6 @@
             scoreSpan.textContent = score;
         }
 
-        // ---------- ПРЫЖОК ----------
         function performJump(force) {
             if (!gameStarted) {
                 gameStarted = true;
@@ -219,14 +216,13 @@
                 restartGame();
                 return;
             }
-            if (gameOver) return;  // В game over нельзя прыгать
+            if (gameOver) return;
             if (!player.isJumping && player.y >= GROUND_Y - PLAYER_SIZE - 1) {
                 player.velY = force;
                 player.isJumping = true;
             }
         }
 
-        // ---------- ПОЛУЧЕНИЕ УРОНА ----------
         function takeDamage() {
             if (player.invincible || gameOver) return false;
             
@@ -238,7 +234,6 @@
                 return true;
             }
             
-            // Неуязвимость на 2 секунды (120 кадров)
             player.invincible = true;
             player.invincibleTimer = 120;
             player.blinkTimer = 0;
@@ -246,7 +241,7 @@
             return true;
         }
 
-        // ---------- ОБРАБОТЧИКИ ТАЧСКРИН ----------
+        // ---------- ОБРАБОТЧИКИ ----------
         function onJumpStart(e) {
             e.preventDefault();
             jumpPressed = true;
@@ -265,7 +260,11 @@
             jumpPressed = false;
         }
 
-        // ---------- ОБРАБОТЧИКИ КЛАВИАТУРЫ ----------
+        function onJumpCancel(e) {
+            e.preventDefault();
+            jumpPressed = false;
+        }
+
         function onKeyDown(e) {
             if (e.code === 'Space') {
                 e.preventDefault();
@@ -289,33 +288,28 @@
             }
         }
 
-        // ---------- УМНЫЙ СПАВН МОНЕТ (УЧИТЫВАЕТ ПРЕПЯТСТВИЯ) ----------
+        // ---------- УМНЫЙ СПАВН МОНЕТ ----------
         function spawnCoin() {
-            // Не спавним монету, если её негде разместить
-            if (obstacles.length > 3) return; // оптимизация
+            if (obstacles.length > 3) return;
             
-            // Пытаемся найти безопасную высоту (не внутри препятствия)
-            let safeY = GROUND_Y - COIN_SIZE - 40; // стандартная высота
+            let safeY = GROUND_Y - COIN_SIZE - 40;
             let attempts = 0;
             let foundSafe = false;
             
             while (!foundSafe && attempts < 10) {
                 attempts++;
                 
-                // 40% - низко (над землёй), 30% - средне, 30% - высоко
                 const rand = Math.random();
                 if (rand < 0.4) {
-                    safeY = GROUND_Y - COIN_SIZE - 20; // низко
+                    safeY = GROUND_Y - COIN_SIZE - 20;
                 } else if (rand < 0.7) {
-                    safeY = GROUND_Y - COIN_SIZE - 70; // средне
+                    safeY = GROUND_Y - COIN_SIZE - 70;
                 } else {
-                    safeY = GROUND_Y - COIN_SIZE - 120; // высоко
+                    safeY = GROUND_Y - COIN_SIZE - 120;
                 }
                 
-                // Проверяем, не попадёт ли монета в препятствие
                 foundSafe = true;
                 for (let obs of obstacles) {
-                    // Если монета будет слишком близко к препятствию по X и на той же высоте
                     if (Math.abs(obs.x - canvas.width) < 100 && 
                         Math.abs(obs.y - safeY) < 40) {
                         foundSafe = false;
@@ -334,7 +328,6 @@
             });
         }
 
-        // ---------- СПАВН ПРЕПЯТСТВИЙ ----------
         function spawnObstacle() {
             const isTall = Math.random() < 0.3;
             const height = isTall ? OBSTACLE_HEIGHT_TALL : OBSTACLE_HEIGHT_NORMAL;
@@ -350,7 +343,6 @@
             });
         }
 
-        // ---------- СТОЛКНОВЕНИЯ ----------
         function checkCollision(rect1, rect2) {
             return rect1.x < rect2.x + rect2.width &&
                    rect1.x + rect1.width > rect2.x &&
@@ -362,16 +354,14 @@
         function update() {
             if (!gameStarted || gameOver) return;
 
-            // ----- ТАЙМЕР УВЕЛИЧЕНИЯ СКОРОСТИ (60 СЕКУНД) -----
+            // ----- ТАЙМЕР СКОРОСТИ -----
             speedTimer++;
             if (speedTimer >= SPEED_INCREASE_INTERVAL) {
                 speedTimer = 0;
                 gameSpeed += 0.5;
                 currentSpeedLevel++;
-                // Можно добавить визуальное оповещение
             }
 
-            // ----- ТАЙМЕР НЕУЯЗВИМОСТИ -----
             if (player.invincible) {
                 player.invincibleTimer--;
                 player.blinkTimer++;
@@ -380,7 +370,7 @@
                 }
             }
 
-            // ----- Игрок (физика) -----
+            // ----- ФИЗИКА ИГРОКА -----
             player.velY += player.gravity;
             player.y += player.velY;
             if (player.y > GROUND_Y - PLAYER_SIZE) {
@@ -389,16 +379,16 @@
                 player.isJumping = false;
             }
 
-            // ----- Спавн препятствий (редко) -----
+            // ----- СПАВН ПРЕПЯТСТВИЙ -----
             if (nextObstacleCounter <= 0) {
                 spawnObstacle();
-                const baseDelay = randomInt(90, 150); // ЕЩЁ БОЛЬШЕ РАССТОЯНИЕ
+                const baseDelay = randomInt(90, 150);
                 nextObstacleCounter = Math.max(50, Math.floor(baseDelay / (gameSpeed / 3)));
             } else {
                 nextObstacleCounter--;
             }
 
-            // ----- Спавн монет -----
+            // ----- СПАВН МОНЕТ -----
             if (nextCoinCounter <= 0) {
                 spawnCoin();
                 const baseDelay = randomInt(50, 100);
@@ -407,7 +397,7 @@
                 nextCoinCounter--;
             }
 
-            // ----- Движение препятствий -----
+            // ----- ДВИЖЕНИЕ ПРЕПЯТСТВИЙ -----
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 obstacles[i].x -= gameSpeed;
                 
@@ -419,13 +409,13 @@
                 if (obstacles[i].x + obstacles[i].width < 0) obstacles.splice(i, 1);
             }
 
-            // ----- Движение монет -----
+            // ----- ДВИЖЕНИЕ МОНЕТ -----
             for (let i = coins.length - 1; i >= 0; i--) {
                 coins[i].x -= gameSpeed;
                 if (coins[i].x + coins[i].width < 0) coins.splice(i, 1);
             }
 
-            // ----- СТОЛКНОВЕНИЕ С ПРЕПЯТСТВИЯМИ (ТОЛЬКО ЕСЛИ НЕ НЕУЯЗВИМ) -----
+            // ----- СТОЛКНОВЕНИЯ (ТОЛЬКО НЕ В НЕУЯЗВИМОСТИ) -----
             if (!player.invincible) {
                 for (let i = obstacles.length - 1; i >= 0; i--) {
                     const obs = obstacles[i];
@@ -434,9 +424,8 @@
                         {x: obs.x, y: obs.y, width: obs.width, height: obs.height}
                     )) {
                         takeDamage();
-                        // Удаляем препятствие, в которое врезались
                         obstacles.splice(i, 1);
-                        break; // только одно повреждение за кадр
+                        break;
                     }
                 }
             }
@@ -453,25 +442,21 @@
                 }
             }
 
-            // ----- ОЧКИ -----
             score += 1;
-
             updateDisplay();
         }
 
         // ---------- ОТРИСОВКА ----------
         function draw() {
-            // Фон
             ctx.fillStyle = '#2c3e50';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Земля
             ctx.fillStyle = '#27ae60';
             ctx.fillRect(0, GROUND_Y, canvas.width, 20);
             ctx.fillStyle = '#34495e';
             ctx.fillRect(0, GROUND_Y - 2, canvas.width, 2);
 
-            // ----- ИГРОК (С ЭФФЕКТОМ МИГАНИЯ ПРИ НЕУЯЗВИМОСТИ) -----
+            // ИГРОК С МИГАНИЕМ
             if (!player.invincible || (player.invincible && Math.floor(player.blinkTimer / 10) % 2 === 0)) {
                 ctx.fillStyle = player.color;
                 ctx.shadowBlur = 10;
@@ -484,7 +469,7 @@
                 ctx.shadowBlur = 0;
             }
 
-            // Препятствия
+            // ПРЕПЯТСТВИЯ
             for (let obs of obstacles) {
                 ctx.fillStyle = obs.color;
                 ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
@@ -505,7 +490,7 @@
                 }
             }
 
-            // Монеты
+            // МОНЕТЫ
             for (let coin of coins) {
                 ctx.fillStyle = coin.color;
                 ctx.shadowBlur = 15;
@@ -520,17 +505,16 @@
                 ctx.shadowBlur = 0;
             }
 
-            // ----- ИНТЕРФЕЙС: УРОВЕНЬ СКОРОСТИ И ТАЙМЕР -----
+            // ИНТЕРФЕЙС
             ctx.fillStyle = 'white';
             ctx.font = '14px Arial';
             ctx.textAlign = 'left';
             ctx.fillText(`⚡ Скорость: ${currentSpeedLevel}`, 10, 50);
             
-            // Таймер до следующего увеличения скорости
             const secondsToNext = Math.floor((SPEED_INCREASE_INTERVAL - speedTimer) / 60);
             ctx.fillText(`⏱️ +0.5 через ${secondsToNext}с`, 10, 80);
 
-            // Стартовый экран
+            // СТАРТОВЫЙ ЭКРАН
             if (!gameStarted) {
                 ctx.fillStyle = 'rgba(0,0,0,0.7)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -541,11 +525,11 @@
                 ctx.fillStyle = 'white';
                 ctx.font = '20px Arial';
                 ctx.fillText('👆 Зажми / ПРОБЕЛ', canvas.width/2, canvas.height/2 + 20);
-                ctx.fillText('❤️ 3 жизни', canvas.width/2, canvas.height/2 + 60);
-                ctx.fillText('Скорость растёт каждые 60 сек', canvas.width/2, canvas.height/2 + 100);
+                ctx.fillText('⚡ УВЕЛИЧЕННАЯ СИЛА ПРЫЖКА!', canvas.width/2, canvas.height/2 + 60);
+                ctx.fillText('❤️ 3 жизни | Скорость растёт', canvas.width/2, canvas.height/2 + 100);
             }
 
-            // Game Over
+            // GAME OVER
             if (gameOver) {
                 ctx.fillStyle = 'rgba(0,0,0,0.9)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -558,7 +542,7 @@
                 ctx.fillText(`Монеты: ${coinsCollected}`, canvas.width/2, canvas.height/2 + 60);
                 ctx.fillStyle = '#f1c40f';
                 ctx.font = '20px Arial';
-                ctx.fillText(`Достигнута скорость: ${currentSpeedLevel}`, canvas.width/2, canvas.height/2 + 120);
+                ctx.fillText(`Скорость: ${currentSpeedLevel}`, canvas.width/2, canvas.height/2 + 120);
                 ctx.fillStyle = '#3498db';
                 ctx.font = '20px Arial';
                 ctx.fillText('Нажми Новая игра', canvas.width/2, canvas.height/2 + 180);
@@ -571,7 +555,7 @@
             animationId = requestAnimationFrame(gameLoop);
         }
 
-        // ---------- НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ ----------
+        // ---------- ПОДПИСКА НА СОБЫТИЯ ----------
         canvas.addEventListener('touchstart', onJumpStart);
         canvas.addEventListener('touchend', onJumpEnd);
         canvas.addEventListener('touchcancel', onJumpCancel);
@@ -595,7 +579,6 @@
             restartGame();
         });
 
-        // Инициализация отображения жизней
         updateLivesDisplay();
         gameLoop();
     </script>
