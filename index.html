@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Runner — синие высокие препятствия, старт 6</title>
+    <title>Jump Runner — зелёные высокие, скорость 4</title>
     <style>
         * {
             margin: 0;
@@ -98,7 +98,7 @@
             <button class="restart-btn" id="restartBtn">🔄 Новая игра</button>
         </div>
         <div class="instructions">
-            👆 Зажми / ПРОБЕЛ | 🔴 Низкие - красные | 🔵 Высокие - синие | Старт 6
+            👆 Зажми / ПРОБЕЛ | 🔴 Низкие - красные | 🟢 Высокие - зелёные | Старт 4
         </div>
     </div>
 
@@ -123,9 +123,8 @@
             x: 50, y: GROUND_Y - PLAYER_SIZE,
             width: PLAYER_SIZE, height: PLAYER_SIZE,
             velY: 0, gravity: 0.5,
-            // ⚡ МИНИМАЛЬНЫЙ ПРЫЖОК УМЕНЬШЕН, МАКСИМАЛЬНЫЙ ОСТАВЛЕН
-            minJumpPower: -8,     // было -11, теперь -8 (чуть ниже)
-            maxJumpPower: -19,    // оставили -19 (высокий прыжок)
+            minJumpPower: -8,
+            maxJumpPower: -19,
             maxHoldTime: 600,
             isJumping: false,
             color: '#3498db',
@@ -139,7 +138,7 @@
         let coins = [];
         
         // ---------- ПАРАМЕТРЫ ИГРЫ ----------
-        let gameSpeed = 6;            // СТАРТОВАЯ СКОРОСТЬ +2 (было 4, теперь 6)
+        let gameSpeed = 4;            // СКОРОСТЬ УМЕНЬШЕНА: 6 → 4 (комфортно для телефона)
         let score = 0;
         let coinsCollected = 0;
         let lives = 3;
@@ -184,7 +183,7 @@
             obstacles = [];
             coins = [];
 
-            gameSpeed = 6;           // СТАРТ 6
+            gameSpeed = 4;           // СТАРТ 4
             speedTimer = 0;
             currentSpeedLevel = 1;
             
@@ -338,8 +337,8 @@
                 y: GROUND_Y - height,
                 width: OBSTACLE_WIDTH,
                 height: height,
-                // 🔵 ВЫСОКИЕ - СИНИЕ | 🔴 НИЗКИЕ - КРАСНЫЕ
-                color: isTall ? '#2980b9' : '#e74c3c',  // синий для высоких, красный для низких
+                // 🟢 ВЫСОКИЕ - ЗЕЛЁНЫЕ | 🔴 НИЗКИЕ - КРАСНЫЕ
+                color: isTall ? '#27ae60' : '#e74c3c',  // зелёный для высоких, красный для низких
                 passed: false,
                 isTall: isTall
             });
@@ -471,14 +470,14 @@
                 ctx.shadowBlur = 0;
             }
 
-            // ПРЕПЯТСТВИЯ (СИНИЕ - ВЫСОКИЕ, КРАСНЫЕ - НИЗКИЕ)
+            // ПРЕПЯТСТВИЯ (ЗЕЛЁНЫЕ - ВЫСОКИЕ, КРАСНЫЕ - НИЗКИЕ)
             for (let obs of obstacles) {
                 ctx.fillStyle = obs.color;
                 ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
                 
                 ctx.fillStyle = 'white';
                 if (obs.isTall) {
-                    // Высокие синие препятствия
+                    // Высокие зелёные препятствия
                     ctx.fillRect(obs.x + 5, obs.y + 15, 6, 6);
                     ctx.fillRect(obs.x + 18, obs.y + 15, 6, 6);
                     ctx.fillStyle = 'black';
@@ -530,8 +529,8 @@
                 ctx.font = '20px Arial';
                 ctx.fillText('👆 Зажми / ПРОБЕЛ', canvas.width/2, canvas.height/2 + 10);
                 ctx.fillText('🔴 Низкие - красные', canvas.width/2, canvas.height/2 + 50);
-                ctx.fillText('🔵 Высокие - синие', canvas.width/2, canvas.height/2 + 90);
-                ctx.fillText('❤️ 3 жизни | Старт 6', canvas.width/2, canvas.height/2 + 130);
+                ctx.fillText('🟢 Высокие - зелёные', canvas.width/2, canvas.height/2 + 90);
+                ctx.fillText('❤️ 3 жизни | Старт 4', canvas.width/2, canvas.height/2 + 130);
             }
 
             // GAME OVER
