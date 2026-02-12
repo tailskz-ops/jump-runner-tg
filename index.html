@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Runner — пробел + зарядка прыжка</title>
+    <title>Jump Runner — высокие препятствия, редкие, разная высота</title>
     <style>
         * {
             margin: 0;
@@ -91,7 +91,7 @@
             <button class="restart-btn" id="restartBtn">🔄 Новая игра</button>
         </div>
         <div class="instructions">
-            👆 Зажми экран / ПРОБЕЛ — чем дольше держишь, тем выше прыжок! | Препятствия на разном расстоянии
+            👆 Зажми экран / ПРОБЕЛ — сила прыжка | Препятствия редкие и разной высоты!
         </div>
     </div>
 
@@ -105,7 +105,9 @@
         // ---------- НАСТРОЙКИ ----------
         const GROUND_Y = 500;
         const PLAYER_SIZE = 40;
-        const OBSTACLE_SIZE = 30;
+        const OBSTACLE_WIDTH = 30;
+        const OBSTACLE_HEIGHT_NORMAL = 30;    // обычная высота
+        const OBSTACLE_HEIGHT_TALL = 60;       // высокая высота (в 2 раза больше)
         const COIN_SIZE = 20;
 
         // ---------- ПЕРЕМЕННЫЕ ИГРОКА ----------
@@ -113,9 +115,9 @@
             x: 50, y: GROUND_Y - PLAYER_SIZE,
             width: PLAYER_SIZE, height: PLAYER_SIZE,
             velY: 0, gravity: 0.5,
-            minJumpPower: -9,     // минимальная сила (короткое нажатие)
-            maxJumpPower: -17,    // максимальная сила (долгое нажатие)
-            maxHoldTime: 600,     // мс — полное заряжание
+            minJumpPower: -9,
+            maxJumpPower: -17,
+            maxHoldTime: 600,
             isJumping: false,
             color: '#3498db'
         };
@@ -137,9 +139,6 @@
         // ---------- ПЕРЕМЕННЫЕ ДЛЯ ЗАРЯДКИ ПРЫЖКА ----------
         let jumpPressed = false;
         let jumpStartTime = 0;
-        let jumpPower = 0;
-
-        // ---------- ДЛЯ КЛАВИАТУРЫ (ПРОБЕЛ) ----------
         let spacePressed = false;
         let spaceStartTime = 0;
 
@@ -150,27 +149,23 @@
 
         // ---------- ПОЛНЫЙ СБРОС ИГРЫ ----------
         function restartGame() {
-            // Сброс игрока
             player.y = GROUND_Y - PLAYER_SIZE;
             player.velY = 0;
             player.isJumping = false;
 
-            // Сброс массивов
             obstacles = [];
             coins = [];
 
-            // Сброс параметров
             gameSpeed = 5;
             score = 0;
             coinsCollected = 0;
             gameOver = false;
             gameStarted = true;
 
-            // Сброс счетчиков спавна
-            nextObstacleCounter = randomInt(15, 30);
-            nextCoinCounter = randomInt(10, 20);
+            // Увеличиваем начальные задержки, чтобы первое препятствие не пришло сразу
+            nextObstacleCounter = randomInt(40, 70);
+            nextCoinCounter = randomInt(20, 40);
 
-            // Сброс состояния прыжка
             jumpPressed = false;
             jumpStartTime = 0;
             spacePressed = false;
@@ -179,13 +174,11 @@
             updateDisplay();
         }
 
-        // ---------- ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ----------
         function updateDisplay() {
             coinSpan.textContent = coinsCollected;
             scoreSpan.textContent = score;
         }
 
-        // ---------- ПРЫЖОК С ЗАДАННОЙ СИЛОЙ ----------
         function performJump(force) {
             if (!gameStarted) {
                 gameStarted = true;
@@ -197,14 +190,13 @@
                 restartGame();
                 return;
             }
-            // Можно прыгать только если на земле
             if (!player.isJumping && player.y >= GROUND_Y - PLAYER_SIZE - 1) {
                 player.velY = force;
                 player.isJumping = true;
             }
         }
 
-        // ---------- ОБРАБОТЧИКИ НАЖАТИЯ (ТАЧСКРИН) ----------
+        // ---------- ОБРАБОТЧИКИ ТАЧСКРИН ----------
         function onJumpStart(e) {
             e.preventDefault();
             jumpPressed = true;
@@ -228,12 +220,10 @@
             jumpPressed = false;
         }
 
-        // ---------- ОБРАБОТЧИКИ КЛАВИАТУРЫ (ПРОБЕЛ) ----------
+        // ---------- ОБРАБОТЧИКИ КЛАВИАТУРЫ ----------
         function onKeyDown(e) {
             if (e.code === 'Space') {
                 e.preventDefault();
-                
-                // Не начинаем новое нажатие, если пробел уже зажат
                 if (!spacePressed) {
                     spacePressed = true;
                     spaceStartTime = performance.now();
@@ -244,27 +234,30 @@
         function onKeyUp(e) {
             if (e.code === 'Space') {
                 e.preventDefault();
-                
                 if (spacePressed) {
                     const holdTime = Math.min(performance.now() - spaceStartTime, player.maxHoldTime);
                     const powerRange = player.maxJumpPower - player.minJumpPower;
                     const force = player.minJumpPower + (powerRange * (holdTime / player.maxHoldTime));
-                    
                     performJump(force);
                     spacePressed = false;
                 }
             }
         }
 
-        // ---------- СПАВН ОБЪЕКТОВ (СЛУЧАЙНЫЙ ИНТЕРВАЛ) ----------
+        // ---------- СПАВН ПРЕПЯТСТВИЙ (РЕДКИЕ, РАЗНАЯ ВЫСОТА) ----------
         function spawnObstacle() {
+            // 70% - обычные, 30% - высокие
+            const isTall = Math.random() < 0.3;
+            const height = isTall ? OBSTACLE_HEIGHT_TALL : OBSTACLE_HEIGHT_NORMAL;
+            
             obstacles.push({
                 x: canvas.width,
-                y: GROUND_Y - OBSTACLE_SIZE,
-                width: OBSTACLE_SIZE,
-                height: OBSTACLE_SIZE,
-                color: '#e74c3c',
-                passed: false
+                y: GROUND_Y - height,  // низ прижат к земле
+                width: OBSTACLE_WIDTH,
+                height: height,
+                color: isTall ? '#c0392b' : '#e74c3c', // высокие темнее
+                passed: false,
+                isTall: isTall
             });
         }
 
@@ -279,7 +272,6 @@
             });
         }
 
-        // ---------- СТОЛКНОВЕНИЯ ----------
         function checkCollision(rect1, rect2) {
             return rect1.x < rect2.x + rect2.width &&
                    rect1.x + rect1.width > rect2.x &&
@@ -291,7 +283,7 @@
         function update() {
             if (!gameStarted || gameOver) return;
 
-            // ----- Игрок (физика) -----
+            // ----- Игрок -----
             player.velY += player.gravity;
             player.y += player.velY;
             if (player.y > GROUND_Y - PLAYER_SIZE) {
@@ -300,19 +292,21 @@
                 player.isJumping = false;
             }
 
-            // ----- Спавн препятствий (разное расстояние) -----
+            // ----- СПАВН ПРЕПЯТСТВИЙ (БОЛЬШОЕ РАССТОЯНИЕ) -----
             if (nextObstacleCounter <= 0) {
                 spawnObstacle();
-                const baseDelay = randomInt(40, 90);
-                nextObstacleCounter = Math.floor(baseDelay / (gameSpeed / 3));
+                // Увеличиваем интервал: теперь от 80 до 140 кадров (было 40-90)
+                const baseDelay = randomInt(80, 140);
+                // Корректируем со скоростью игры, но не даём стать слишком маленьким
+                nextObstacleCounter = Math.max(40, Math.floor(baseDelay / (gameSpeed / 3)));
             } else {
                 nextObstacleCounter--;
             }
 
-            // ----- Спавн монет -----
+            // ----- Спавн монет (чуть реже) -----
             if (nextCoinCounter <= 0) {
                 spawnCoin();
-                const baseDelay = randomInt(30, 70);
+                const baseDelay = randomInt(40, 90);
                 nextCoinCounter = Math.floor(baseDelay / (gameSpeed / 3.5));
             } else {
                 nextCoinCounter--;
@@ -321,10 +315,14 @@
             // ----- Движение препятствий -----
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 obstacles[i].x -= gameSpeed;
+                
+                // Бонус за успешное прохождение
                 if (!obstacles[i].passed && obstacles[i].x + obstacles[i].width < player.x) {
                     obstacles[i].passed = true;
-                    score += 20;
+                    // Высокие препятствия дают больше очков
+                    score += obstacles[i].isTall ? 30 : 20;
                 }
+                
                 if (obstacles[i].x + obstacles[i].width < 0) obstacles.splice(i, 1);
             }
 
@@ -338,7 +336,7 @@
             for (let obs of obstacles) {
                 if (checkCollision(
                     {x: player.x, y: player.y, width: PLAYER_SIZE, height: PLAYER_SIZE},
-                    {x: obs.x, y: obs.y, width: OBSTACLE_SIZE, height: OBSTACLE_SIZE}
+                    {x: obs.x, y: obs.y, width: obs.width, height: obs.height}
                 )) {
                     gameOver = true;
                     break;
@@ -387,16 +385,26 @@
             ctx.fillRect(player.x + 28, player.y + 12, 4, 4);
             ctx.shadowBlur = 0;
 
-            // Препятствия
+            // Препятствия (разной высоты)
             for (let obs of obstacles) {
                 ctx.fillStyle = obs.color;
-                ctx.fillRect(obs.x, obs.y, OBSTACLE_SIZE, OBSTACLE_SIZE);
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+                
+                // Глазки для обычных препятствий, для высоких сдвигаем
                 ctx.fillStyle = 'white';
-                ctx.fillRect(obs.x + 5, obs.y + 8, 6, 6);
-                ctx.fillRect(obs.x + 18, obs.y + 8, 6, 6);
-                ctx.fillStyle = 'black';
-                ctx.fillRect(obs.x + 7, obs.y + 10, 3, 3);
-                ctx.fillRect(obs.x + 20, obs.y + 10, 3, 3);
+                if (obs.isTall) {
+                    ctx.fillRect(obs.x + 5, obs.y + 15, 6, 6);
+                    ctx.fillRect(obs.x + 18, obs.y + 15, 6, 6);
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(obs.x + 7, obs.y + 17, 3, 3);
+                    ctx.fillRect(obs.x + 20, obs.y + 17, 3, 3);
+                } else {
+                    ctx.fillRect(obs.x + 5, obs.y + 8, 6, 6);
+                    ctx.fillRect(obs.x + 18, obs.y + 8, 6, 6);
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(obs.x + 7, obs.y + 10, 3, 3);
+                    ctx.fillRect(obs.x + 20, obs.y + 10, 3, 3);
+                }
             }
 
             // Монеты
@@ -414,7 +422,7 @@
                 ctx.shadowBlur = 0;
             }
 
-            // Экран "Нажми, чтобы начать"
+            // Экран старта
             if (!gameStarted) {
                 ctx.fillStyle = 'rgba(0,0,0,0.7)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -425,7 +433,7 @@
                 ctx.fillStyle = 'white';
                 ctx.font = '20px Arial';
                 ctx.fillText('👆 Зажми / ПРОБЕЛ', canvas.width/2, canvas.height/2 + 30);
-                ctx.fillText('для силы прыжка', canvas.width/2, canvas.height/2 + 70);
+                ctx.fillText('Препятствия редкие и высокие!', canvas.width/2, canvas.height/2 + 70);
             }
 
             // Экран Game Over
@@ -441,11 +449,10 @@
                 ctx.fillText(`Монеты: ${coinsCollected}`, canvas.width/2, canvas.height/2 + 70);
                 ctx.fillStyle = '#3498db';
                 ctx.font = '20px Arial';
-                ctx.fillText('Зажми / ПРОБЕЛ, чтобы сыграть снова', canvas.width/2, canvas.height/2 + 150);
+                ctx.fillText('Зажми / ПРОБЕЛ для рестарта', canvas.width/2, canvas.height/2 + 150);
             }
         }
 
-        // ---------- ИГРОВОЙ ЦИКЛ ----------
         function gameLoop() {
             update();
             draw();
@@ -453,35 +460,29 @@
         }
 
         // ---------- НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ ----------
-        // Тачскрин
         canvas.addEventListener('touchstart', onJumpStart);
         canvas.addEventListener('touchend', onJumpEnd);
         canvas.addEventListener('touchcancel', onJumpCancel);
         canvas.addEventListener('touchmove', (e) => e.preventDefault());
 
-        // Мышь
         canvas.addEventListener('mousedown', onJumpStart);
         canvas.addEventListener('mouseup', onJumpEnd);
         canvas.addEventListener('mouseleave', onJumpCancel);
 
-        // Клавиатура (пробел)
         window.addEventListener('keydown', onKeyDown);
         window.addEventListener('keyup', onKeyUp);
         
-        // Запрет скролла при нажатии пробела (для всей страницы)
         window.addEventListener('keydown', function(e) {
             if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
                 e.preventDefault();
             }
         }, false);
 
-        // Кнопка рестарта
         restartBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             restartGame();
         });
 
-        // Запуск цикла
         gameLoop();
     </script>
 </body>
