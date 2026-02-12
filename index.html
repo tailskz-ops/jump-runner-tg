@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jump Runner — сила прыжка + случайные препятствия</title>
+    <title>Jump Runner — пробел + зарядка прыжка</title>
     <style>
         * {
             margin: 0;
@@ -91,7 +91,7 @@
             <button class="restart-btn" id="restartBtn">🔄 Новая игра</button>
         </div>
         <div class="instructions">
-            👆 Зажми экран — чем дольше держишь, тем выше прыжок! | Препятствия на разном расстоянии
+            👆 Зажми экран / ПРОБЕЛ — чем дольше держишь, тем выше прыжок! | Препятствия на разном расстоянии
         </div>
     </div>
 
@@ -139,6 +139,10 @@
         let jumpStartTime = 0;
         let jumpPower = 0;
 
+        // ---------- ДЛЯ КЛАВИАТУРЫ (ПРОБЕЛ) ----------
+        let spacePressed = false;
+        let spaceStartTime = 0;
+
         // ---------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ----------
         function randomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -169,6 +173,8 @@
             // Сброс состояния прыжка
             jumpPressed = false;
             jumpStartTime = 0;
+            spacePressed = false;
+            spaceStartTime = 0;
 
             updateDisplay();
         }
@@ -198,35 +204,56 @@
             }
         }
 
-        // ---------- ОБРАБОТЧИКИ НАЖАТИЯ (ЗАРЯДКА) ----------
+        // ---------- ОБРАБОТЧИКИ НАЖАТИЯ (ТАЧСКРИН) ----------
         function onJumpStart(e) {
             e.preventDefault();
-            if (gameOver) {
-                // Если игра окончена, короткое нажатие = рестарт
-                // Но мы сделаем рестарт при отпускании (onJumpEnd)
-            }
-            // Запоминаем время начала нажатия
             jumpPressed = true;
             jumpStartTime = performance.now();
         }
 
         function onJumpEnd(e) {
             e.preventDefault();
-            if (!jumpPressed) return; // уже обработали
+            if (!jumpPressed) return;
 
             const holdTime = Math.min(performance.now() - jumpStartTime, player.maxHoldTime);
-            // Вычисляем силу прыжка: чем дольше держал, тем сильнее (отрицательное значение)
-            const powerRange = player.maxJumpPower - player.minJumpPower; // -17 - (-9) = -8
+            const powerRange = player.maxJumpPower - player.minJumpPower;
             const force = player.minJumpPower + (powerRange * (holdTime / player.maxHoldTime));
             
             performJump(force);
             jumpPressed = false;
         }
 
-        // Отмена прыжка, если палец/мышь ушли с канваса
         function onJumpCancel(e) {
             e.preventDefault();
             jumpPressed = false;
+        }
+
+        // ---------- ОБРАБОТЧИКИ КЛАВИАТУРЫ (ПРОБЕЛ) ----------
+        function onKeyDown(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                
+                // Не начинаем новое нажатие, если пробел уже зажат
+                if (!spacePressed) {
+                    spacePressed = true;
+                    spaceStartTime = performance.now();
+                }
+            }
+        }
+
+        function onKeyUp(e) {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                
+                if (spacePressed) {
+                    const holdTime = Math.min(performance.now() - spaceStartTime, player.maxHoldTime);
+                    const powerRange = player.maxJumpPower - player.minJumpPower;
+                    const force = player.minJumpPower + (powerRange * (holdTime / player.maxHoldTime));
+                    
+                    performJump(force);
+                    spacePressed = false;
+                }
+            }
         }
 
         // ---------- СПАВН ОБЪЕКТОВ (СЛУЧАЙНЫЙ ИНТЕРВАЛ) ----------
@@ -276,14 +303,13 @@
             // ----- Спавн препятствий (разное расстояние) -----
             if (nextObstacleCounter <= 0) {
                 spawnObstacle();
-                // Случайный интервал до следующего препятствия (зависит от скорости)
                 const baseDelay = randomInt(40, 90);
                 nextObstacleCounter = Math.floor(baseDelay / (gameSpeed / 3));
             } else {
                 nextObstacleCounter--;
             }
 
-            // ----- Спавн монет (тоже случайный, для разнообразия) -----
+            // ----- Спавн монет -----
             if (nextCoinCounter <= 0) {
                 spawnCoin();
                 const baseDelay = randomInt(30, 70);
@@ -398,7 +424,7 @@
                 ctx.fillText('JUMP RUNNER', canvas.width/2, canvas.height/2 - 50);
                 ctx.fillStyle = 'white';
                 ctx.font = '20px Arial';
-                ctx.fillText('👆 Зажми и держи', canvas.width/2, canvas.height/2 + 30);
+                ctx.fillText('👆 Зажми / ПРОБЕЛ', canvas.width/2, canvas.height/2 + 30);
                 ctx.fillText('для силы прыжка', canvas.width/2, canvas.height/2 + 70);
             }
 
@@ -415,7 +441,7 @@
                 ctx.fillText(`Монеты: ${coinsCollected}`, canvas.width/2, canvas.height/2 + 70);
                 ctx.fillStyle = '#3498db';
                 ctx.font = '20px Arial';
-                ctx.fillText('Нажми и держи, чтобы сыграть снова', canvas.width/2, canvas.height/2 + 150);
+                ctx.fillText('Зажми / ПРОБЕЛ, чтобы сыграть снова', canvas.width/2, canvas.height/2 + 150);
             }
         }
 
@@ -427,23 +453,33 @@
         }
 
         // ---------- НАЗНАЧЕНИЕ ОБРАБОТЧИКОВ ----------
-        // Нажатие (зарядка)
+        // Тачскрин
         canvas.addEventListener('touchstart', onJumpStart);
-        canvas.addEventListener('mousedown', onJumpStart);
-
-        // Отпускание (прыжок)
         canvas.addEventListener('touchend', onJumpEnd);
+        canvas.addEventListener('touchcancel', onJumpCancel);
+        canvas.addEventListener('touchmove', (e) => e.preventDefault());
+
+        // Мышь
+        canvas.addEventListener('mousedown', onJumpStart);
         canvas.addEventListener('mouseup', onJumpEnd);
-        canvas.addEventListener('mouseleave', onJumpCancel); // если мышь ушла с канваса
+        canvas.addEventListener('mouseleave', onJumpCancel);
+
+        // Клавиатура (пробел)
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('keyup', onKeyUp);
+        
+        // Запрет скролла при нажатии пробела (для всей страницы)
+        window.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+                e.preventDefault();
+            }
+        }, false);
 
         // Кнопка рестарта
         restartBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             restartGame();
         });
-
-        // Запрет скролла при касании
-        canvas.addEventListener('touchmove', (e) => e.preventDefault());
 
         // Запуск цикла
         gameLoop();
